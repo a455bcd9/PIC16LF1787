@@ -107,7 +107,7 @@ void main()
     //**********************************************************************************
 
 	ADCON1bits.ADCS = 0b010;	// Selecting the clk division factor = FOSC/32 cf page 169 ADC Clock Period TAD = 1.0 µs
-	ADCON1bits.ADFM = 1;		// Result right justified (1 = 2?s complement format 0 = Sign-magnitude result format )
+	ADCON1bits.ADFM = 1;		// Result right justified (1 = 2 s complement format 0 = Sign-magnitude result format )
 	ADCON0bits.ADON = 1;		// Turns on ADC module
 	ADCON0bits.CHS = 0b00000;	// Selects channel 0 ( AN0)
 	ADCON0bits.ADRMD = 0 ;		// ADC Result Mode bit 12 bits
@@ -179,7 +179,7 @@ do
 }
 
 /* -----------------------------------------------
-// Code pour l?export par Martincic
+// Code pour export repris de PIC16F707.c
 char MSG_INIT_1[]="\n\rCircuit de mesure v1.0\0";
 
 Dans le main : Affichage((int)((ADCREAD()>>4)&0xFF)); */
