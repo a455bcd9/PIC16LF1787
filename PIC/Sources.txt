@@ -2,7 +2,11 @@ Sites internet utiles :
 http://www.egr.msu.edu/classes/ece480/capstone/spring12/group03/Documents/Ryan_ApplicationNote.pdf
 http://electrosome.com/adc-pic-microcontroller-hi-tech-c/
 
-ADC example : http://www.technoburst.net/2013/04/pic16f877a-adc-example.html
+ADC examples :
+http://www.technoburst.net/2013/04/pic16f877a-adc-example.html
+http://www.instructables.com/id/Programming-PIC-Microcontrollers/step9/Reading-an-Analog-Value
+http://www.microcontrollerboard.com/analog-to-digital-converter.html
+http://fabrice.sincere.pagesperso-orange.fr/cm_electronique/projet_pic/aidememoire/16F88_ADC/ADC_16F88.htm
 
 Delay :
 http://forum.htsoft.com/all/showflat.php/Cat/0/Number/77692/an/page/page//vc/1
