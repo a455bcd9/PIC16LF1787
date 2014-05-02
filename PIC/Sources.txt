@@ -1,0 +1,17 @@
+Sites internet utiles :
+http://www.egr.msu.edu/classes/ece480/capstone/spring12/group03/Documents/Ryan_ApplicationNote.pdf
+http://electrosome.com/adc-pic-microcontroller-hi-tech-c/
+
+ADC example : http://www.technoburst.net/2013/04/pic16f877a-adc-example.html
+
+Delay :
+http://forum.htsoft.com/all/showflat.php/Cat/0/Number/77692/an/page/page//vc/1
+http://www.microchip.com/forums/m630159-p2.aspx
+http://www.microchip.com/forums/m780759.aspx
+http://dangerousprototypes.com/forum/viewtopic.php?t=4533&p=44319
+https://stackoverflow.com/questions/20756483/pic-and-xc8-compiler-issue
+http://www.electro-tech-online.com/threads/just-started-with-mplab-xc-and-am-having-problems-with-__delay.136042/
+
+ADC :
+http://www.gooligum.com.au/tutorials/baseline/PIC_Base_C_7.pdf
+http://www.nerdegutta.org/index.php/programmering/34-pic-16f688-adc-demo
