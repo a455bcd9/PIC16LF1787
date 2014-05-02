@@ -2,9 +2,13 @@
 // http://electrosome.com/adc-pic-microcontroller-hi-tech-c/
 // http://www.technoburst.net/2013/04/pic16f877a-adc-example.html
 
+// Definitions
+#define _XTAL_FREQ  32000000    // this is used by the __delay_ms(xx) and __delay_us(xx) functions
+// #define __delay_us(x) _delay((unsigned long)((x)*(_XTAL_FREQ/4000000.0)))
+
 // 'C' source line config statements
 #include <xc.h>
-#include <htc.h>
+//#include <pic16lf1787.h>
 
 // #pragma config statements should precede project file includes.
 // Use project enums instead of #define for ON and OFF.
@@ -17,27 +21,20 @@
 #pragma config MCLRE = ON       // RE3/MCLR Pin Function Select bit (RE3/MCLR pin function is MCLR)
 #pragma config CP = OFF         // Code Protection bit (Program memory code protection is disabled)
 #pragma config BOREN = ON       // Brown-out Reset Selection bits (BOR enabled)
-#pragma config BORV = 19        // Brown-out Reset Voltage Selection bit (Brown-out Reset Voltage (VBOR) set to 1.9 V nominal)
+#pragma config BORV = 1         // Brown-out Reset Voltage Selection bit (Brown-out Reset Voltage (VBOR) set to 1.9 V nominal) page 411
 #pragma config PLLEN = ON       // INTOSC PLLEN Enable Bit (INTOSC Frequency is 32 MHz
-#pragma config LVP = OFF		// cf UART
-
-// CONFIG2
-#pragma config VCAPEN = OFF     // Voltage Regulator Capacitor Enable bits (All VCAP pin functions are disabled)
-
-// Definitions
-#define _XTAL_FREQ  16000000    // this is used by the __delay_ms(xx) and __delay_us(xx) functions
-#define IncomingData_LED   LATDbits.LATD4	// Incoming Data LED shows that uart data has been received
+#pragma config LVP = OFF	// cf UART
 
 unsigned short ADC_Read()
 {
 	unsigned short ADCResult ;
- 
+
 // while(1)
 //   {
 	__delay_us(1); //Waits for the acquisition to complete 1 microseconde
-	ADCON0bits.GO = 1;   //Starts ADC conversion 
-	while (ADCON0bits.nDONE) continue;   //wait till ADC conversion is over 
-	ADCResult = (ADRESH<<8) + ADRESL ;   //Merging the MSB and LSB   
+	ADCON0bits.GO = 1;   //Starts ADC conversion
+	while(ADCON0bits.DONE);   //wait till ADC conversion is over
+	ADCResult = (ADRESH<<8) + ADRESL ;   //Merging the MSB and LSB
 // ADRESH<<8 ou bien ADRESHbits.AD ?
    return ADCResult ;
 //   }
@@ -45,22 +42,22 @@ unsigned short ADC_Read()
 
 void main()
 {
-unsigned int a;
+// unsigned int a;
     // set up oscillator control register for internal clock running at 32hz
 	OSCCON = 0xF8;	// 11111000 On demande 32 Mhz le resultat depend de PLLEN cf p 56 + 74 + 82
-	
+
 //	OPTION_REGbits.nWPUEN = 0; // enable weak pullups (each pin must be enabled individually)
-	
+
     // PORT A Assignments
 	TRISA = 0xFF; //PORTA as input RA0
 
 	ANSELAbits.ANSA0 = 1; // Pin is assigned as analog input. Digital input buffer disabled. Analog Select between Analog or Digital Function on Pins RA0
 
 // for( ; (OSCCON & 0xC) != 0xC ; );  On attend la stabilisation de l'oscillateur pour continuer
-// ANSELA = 2; // initialise les registres ANSELA et ANSELB  0  I/O numérique ; 
-// 1 : input ; 0 : Output  
+// ANSELA = 2; // initialise les registres ANSELA et ANSELB  0  I/O numérique ;
+// 1 : input ; 0 : Output
 // ANSELB = 0;
-	
+
     // PORT B Assignments
 	TRISB0 = 0; // RB0 as output VDD
 	TRISB1 = 0; // nc
@@ -70,9 +67,9 @@ unsigned int a;
 	TRISB5 = 0; // nc
 	TRISB6 = 1; // RB6 ICSPCLK
 	TRISB7 = 1; // RB7 ICSPDAT
-	
+
 	ANSELB = 0x00; // all port B pins are digital I/O
-	
+
     // PORT C Assignments
 	TRISC0 = 1; // multiplexeur en sortie
 	TRISC1 = 1; // idem
@@ -82,19 +79,23 @@ unsigned int a;
 	TRISC5 = 0; // nc
 	TRISC6 = 0; // RC6 : écriture
 	TRISC7 = 1; // RC7 : lecture port serie entre 1
-	
-	ANSELC = ANSELC & 0x3D; // RC6 = TXREG et RC7 = RXREG 
-	
+
+        APFCON1bits.TXSEL = 0; // page 131 TX is on pin RC6
+        APFCON1bits.RXSEL = 0; // page 131 RX is on pin RC7
+
+
+//	ANSELC = ANSELC & 0x3D; // RC6 = TXREG et RC7 = RXREG pas sur PIC16LF1787
+
     //	PORT D Assignments
 	TRISD = 0x00; 	// multiplexeur en sortie
-	
-	ANSELD=0x00;    // all port D pins are digital I/O
-	
+
+	ANSELD = 0x00;    // all port D pins are digital I/O
+
     //	PORT E Assignments
 	TRISE = 0xFF; 	// RE3 MCLR as input
 
-	ANSELE=0x00;    // all port E pins are digital I/O
-	
+	ANSELE = 0x00;    // all port E pins are digital I/O
+
 	//**********************************************************************************
     // Set up the ADC
     //**********************************************************************************
@@ -104,16 +105,16 @@ unsigned int a;
     // more stable reference voltage than Vdd. The FVR can also be used as the Vref for
     // the DAC.  Read the section in the datasheet about the FVR for more details.
     //**********************************************************************************
-	
-	ADCON1bits.ADCS = 010;		// Selecting the clk division factor = FOSC/32 cf page 169 ADC Clock Period TAD = 1.0 µs
-	ADCON1bits.ADFM = 1;		// Result right justified (1 = 2’s complement format 0 = Sign-magnitude result format )   
-	ADCON0bits.ADON = 1;		// Turns on ADC module 
-	ADCON0bits.CHS = 00000;		// Selects channel 0 ( AN0) 
+
+	ADCON1bits.ADCS = 0b010;	// Selecting the clk division factor = FOSC/32 cf page 169 ADC Clock Period TAD = 1.0 µs
+	ADCON1bits.ADFM = 1;		// Result right justified (1 = 2’s complement format 0 = Sign-magnitude result format )
+	ADCON0bits.ADON = 1;		// Turns on ADC module
+	ADCON0bits.CHS = 0b00000;	// Selects channel 0 ( AN0)
 	ADCON0bits.ADRMD = 0 ;		// ADC Result Mode bit 12 bits
-	ADCON0bits.ADNREF = 1 ;		// VSS Reference voltage
-	ADCON0bits.ADPREF = 00 ;	// VDD Reference voltage
+	ADCON1bits.ADNREF = 0 ;		// VSS Reference voltage
+	ADCON1bits.ADPREF = 0b00 ;	// VDD Reference voltage
 	
-	
+
 	//*************************************************************************************
     // Set up the UART
     // Note: See the datasheet for tables with the values of SPBRGH:SPBRGL already
@@ -124,7 +125,7 @@ unsigned int a;
 	// page 359 8 bit asynchronous SYNC = 0 BRG16 = 0 BRGH = 0
 	// BRG16 dans BAUDCON page 357
 	// SYNC et BRGH dans TXSTA page 355
-	
+
 	// Configuration timer port serie
 	BAUDCONbits.BRG16 = 0; 					// BRG16 = 0 page 363 et 357
 
@@ -136,17 +137,17 @@ unsigned int a;
     TXSTAbits.BRGH = 0;		// select low speed Baud Rate (see baud rate calcs below)
     TXSTAbits.TX9  = 0;		// select 8 data bits
     TXSTAbits.TXEN = 1;     // enable transmit
-	TXSTAbits.SYNC = 0; 	// asynchronous
+    TXSTAbits.SYNC = 0; 	// asynchronous
 
 /* 	RCSTA = RCSTA | 0x20; 		// SREN = 1 réception serie activee
 	RCSTA = RCSTA & 0xDF; 		// RX9 = 0 on n'attend que 8 bits
 	RCSTA = RCSTA | 0x04; 		// FERR=1
 	RCSTA = RCSTA | 0x02; 		// OERR=1 */
-	
-	RCSTAbits.SPEN=1;       // serial port is enabled
+
+    RCSTAbits.SPEN=1;       // serial port is enabled
     RCSTAbits.RX9=0;        // select 8 data bits
-	RCSTAbits.FERR=1;       // Framing Error
-	RCSTAbits.OERR=1;       // Overrun Error
+    RCSTAbits.FERR=1;       // Framing Error
+    RCSTAbits.OERR=1;       // Overrun Error
     RCSTAbits.CREN=1;       // receive enabled
 
 /* 	// Monsieur Microchip dit que ces 3 la doivent etre dans
@@ -154,11 +155,11 @@ unsigned int a;
 	TXSTA = TXSTA & 0xEF;		// SYNC = 0 mode asynchrone
 	TXSTA = TXSTA | 0x20; 		// TXEN = 1
 	RCSTA = RCSTA | 0x80; 		// SPEN = 1 liaison serie activee */
-	
+
 	// calculate values of SPBRGL and SPBRGH based on the desired baud rate
 	// cf explications page 358
 	SPBRG = 51; 				// 9600 bauds avec une horloge INTOSC = 32 MHz BRGH = 0 et BRG16 = 0 pour 8 bit asynchronous (p 360 de la doc)
-	
+
 	PIR1bits.RCIF=0;        // make sure receive interrupt flag is clear
     PIE1bits.RCIE=1;        // enable UART Receive interrupt
     INTCONbits.PEIE = 1;    // Enable peripheral interrupt
@@ -169,17 +170,19 @@ do
 // Inserer code de Guillaume
 // Faire les 36 mesures
 
-	a = ADC_Read(); //Reading Analog Channel (On lit déjà AN0)
+/* 	a = ADC_Read(); //Reading Analog Channel (On lit déjà AN0)
 // b = éliminer les bits de poids faible de a et envoyer un octet
-	__delay_ms(50);        // give time for voltage levels on board to settle
+	__delay_ms(50);        // give time for voltage levels on board to settle */
+
+	TXREG = 'H';
 }while(1); //Infinite Loop
 }
 
------------------------------------------------
+/* -----------------------------------------------
 // Code pour l’export par Martincic
 char MSG_INIT_1[]="\n\rCircuit de mesure v1.0\0";
 
-Dans le main : Affichage((int)((ADCREAD()>>4)&0xFF));
+Dans le main : Affichage((int)((ADCREAD()>>4)&0xFF)); */
 
 void Affichage(char affiche)
 {
@@ -201,34 +204,35 @@ double calcul;
    	dizmil = ((char)(affiche/10000))+0x30;
 	TXREG = dizmil;
 	affiche = affiche % 10000 ;
-	
+
 	for(;(TXSTA&0x02)!= 0x02;);
    	mil = ((char)(affiche/1000))+0x30;
 	TXREG = mil;
-	
+
 	for(;(TXSTA&0x02)!= 0x02;);
    	TXREG = '.';
-	
+
 	affiche = affiche % 1000 ;
-	
+
 	for(;(TXSTA&0x02)!= 0x02;);
    	cent = ((char)(affiche/100))+0x30;
 	TXREG = cent;
 	affiche = affiche % 100 ;
-	
+
 	for(;(TXSTA&0x02)!= 0x02;);
 	diz = ((char)(affiche/10))+0x30;
 	TXREG = diz;
 	affiche = affiche % 10 ;
-	
+
 	for(;(TXSTA&0x02)!= 0x02;);
    	unit = ((char)(affiche))+0x30;
 	TXREG = unit;
-	
-	TXREG = "/n"; // Saut de ligne
+
+	TXREG=0x0D; // Carriage return
+        // TXREG=0x0A; ou bien ça ?
 }
 
-------------------------------------------------
+/* ------------------------------------------------
 
 // Code de Guillaume à insérer dans celui de Li
 
@@ -446,3 +450,4 @@ for (;;) {
 	PORTCbits.RC2 = 1;
 //mesure 66
 }
+ */
