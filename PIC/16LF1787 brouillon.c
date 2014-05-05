@@ -140,11 +140,11 @@ void main()
 	RCSTA = RCSTA | 0x04; 		// FERR=1
 	RCSTA = RCSTA | 0x02; 		// OERR=1 */
 
-    	RCSTAbits.SPEN=1;       // serial port is enabled
-    	RCSTAbits.RX9=0;        // select 8 data bits
-    	RCSTAbits.FERR=1;       // Framing Error
-    	RCSTAbits.OERR=1;       // Overrun Error
-    	RCSTAbits.CREN=1;       // receive enabled
+    	RCSTAbits.SPEN = 1;       // serial port is enabled
+    	RCSTAbits.RX9 = 0;        // select 8 data bits
+    	RCSTAbits.FERR = 1;       // Framing Error
+    	RCSTAbits.OERR = 1;       // Overrun Error
+    	RCSTAbits.CREN = 1;       // receive enabled
 
 /* 	// Monsieur Microchip dit que ces 3 la doivent etre dans
 	// cet etat pour avoir une liaison serie asynchrone
